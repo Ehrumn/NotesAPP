@@ -49,15 +49,15 @@ public class DatabaseHelper
         return result;
     }
 
-    public static IEnumerable<T> Read<T>() where T : new()
+    public static List<T> Read<T>() where T : new()
     {
-        IEnumerable<T> items;
+        List<T> items;
 
         using (SQLiteConnection conn = new SQLiteConnection(dbFile))
         {
             conn.CreateTable<T>();
 
-            items = conn.Table<T>();
+            items = conn.Table<T>().ToList();
         }
 
         return items;

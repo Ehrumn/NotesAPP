@@ -1,4 +1,6 @@
-﻿namespace Evernote.ViewModel.Commands;
+﻿using Evernote.Model;
+
+namespace Evernote.ViewModel.Commands;
 
 public class NewNoteCommand : ICommand
 {
@@ -12,11 +14,15 @@ public class NewNoteCommand : ICommand
 
     public bool CanExecute(object parameter)
     {
-        return true;
+        Notebook selectedNotebook = (Notebook)parameter;
+        if (selectedNotebook is not null)
+            return true;
+        return false;
     }
 
     public void Execute(object parameter)
     {
-        //TODO: return newNoteCommand;
+        Notebook selectedNotebook = (Notebook)parameter;
+        VM.CreateNote(selectedNotebook.Id);
     }
 }
