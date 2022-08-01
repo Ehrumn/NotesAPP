@@ -47,6 +47,8 @@ public class NotesVM : INotifyPropertyChanged
         };
 
         DatabaseHelper.Insert(newNotebook);
+
+        GetNotebooks();
     }
 
     public void CreateNote(int notebookId)
@@ -56,10 +58,11 @@ public class NotesVM : INotifyPropertyChanged
             NotebookId = notebookId,
             CreateAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
-            Title = "New note"
+            Title = $"Note for {DateTime.Now.ToString("G")}"
         };
 
         DatabaseHelper.Insert(newNote);
+        GetNotes();
     }
 
     private void GetNotebooks()
