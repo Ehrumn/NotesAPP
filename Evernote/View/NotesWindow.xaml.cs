@@ -1,13 +1,34 @@
-﻿using Microsoft.CognitiveServices.Speech;
-using Microsoft.CognitiveServices.Speech.Audio;
+﻿using System.Speech.Recognition;
 using System.Windows.Documents;
 
 namespace Evernote.View;
 public partial class NotesWindow : Window
 {
+    SpeechRecognitionEngine recoginzer;
+
     public NotesWindow()
     {
         InitializeComponent();
+
+        var currentCulture = (from r in SpeechRecognitionEngine.InstalledRecognizers() 
+                              where r.Culture.Equals(Thread.CurrentThread.CurrentCulture)
+                              select r).FirstOrDefault();
+        recoginzer = new SpeechRecognitionEngine(currentCulture);
+
+        GrammarBuilder builder = new GrammarBuilder();
+        builder.AppendDictation();
+        Grammar grammar = new Grammar(builder);
+
+        recoginzer.LoadGrammar(grammar);
+        recoginzer.SetInputToDefaultAudioDevice();
+        recoginzer.SpeechRecognized+=Recoginzer_SpeechRecognized;
+    }
+
+    private void Recoginzer_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
+    {
+        string recoginzedText= e.Result.Text;
+
+        contentRichTextBox.Document.Blocks.Add(new Paragraph(new Run(recoginzedText)));
     }
 
     private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -15,20 +36,18 @@ public partial class NotesWindow : Window
         Application.Current.Shutdown();
     }
 
+    bool isRecognizing = false;
     private async void SpeechButton_Click(object sender, RoutedEventArgs e)
     {
-        string region = "brazilsouth";
-        string key = "3c365d8e9154412195972be0bb5ca981";
-
-        var speechConfig = SpeechConfig.FromSubscription(key, region);
-
-        using (var audioConfig = AudioConfig.FromDefaultMicrophoneInput())
+        if (!isRecognizing)
         {
-            using (var recognizer = new SpeechRecognizer(speechConfig, audioConfig))
-            {
-                var result = await recognizer.RecognizeOnceAsync();
-                contentRichTextBox.Document.Blocks.Add(new Paragraph(new Run(result.Text)));
-            }
+            recoginzer.RecognizeAsync(RecognizeMode.Multiple);
+            isRecognizing = true;
+        }
+        else
+        {
+            recoginzer.RecognizeAsyncStop();
+            isRecognizing = false;
         }
     }
 
